@@ -9,7 +9,7 @@ public class DAOImpl implements DAO {
 	
 	public DAOImpl(){
 		try {
-			conn = DriverManager.getConnection("jdbc:sqlserver://DESKTOP-XXXXX;databaseName=Market", "sa", "WXYZ");
+			conn = DriverManager.getConnection("jdbc:sqlserver://DESKTOP-JA5ASAC;databaseName=Market", "sa", "passwd");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -18,7 +18,7 @@ public class DAOImpl implements DAO {
 	
     public void insertProduct (Product product) throws SQLException, DAOException{
         try{
-            PreparedStatement psmt = conn.prepareStatement("INSERT INTO `store`.`product` (`Product_ID`, `Type`, `Manufacturer`, `Production_Date`, `Expiry_Date`) VALUES (?, ?, ?, ?, ?);");
+            PreparedStatement psmt = conn.prepareStatement("INSERT INTO dbo.Products (id, type, manufacturer, productionDate, expiryDate) VALUES (?,?,?,?,?);");
             psmt.setInt(1, product.getId());
             psmt.setString(2, product.getType());
             psmt.setString(3, product.getManufacturer());
@@ -29,6 +29,29 @@ public class DAOImpl implements DAO {
         catch (SQLException e) {
         	throw new DAOException(e);
         }
+    }
+    public Product getProduct(int ID) throws SQLException, DAOException
+    {
+    	Product product = null;
+    	try
+    	{
+    		//conn = DriverManager.getConnection("jdbc:sqlserver://DESKTOP-JA5ASAC;databaseName=Market", "sa", "passwd");
+    		PreparedStatement psmt = conn.prepareStatement("SELECT * FROM Products WHERE id = ?");
+    		psmt.setInt(1, ID);
+            ResultSet res =  psmt.executeQuery();
+            while (res.next()) {
+            	product = new Product(res.getInt("id"));
+            	product.setType(res.getString("type"));
+            	product.setManufacturer(res.getString("manufacturer"));
+            	product.setProductionDate(res.getString("productionDate"));
+            	product.setExpiryDate(res.getString("expiryDate"));
+			}
+    	}
+    	catch (SQLException e) {
+    		throw new DAOException(e);
+		}
+    	
+    	return product;
     }
     public void updateProduct (Product product) throws SQLException, DAOException{
         try{
@@ -46,7 +69,7 @@ public class DAOImpl implements DAO {
     }
     public void deleteProduct (int id) throws SQLException, DAOException{
         try{
-            PreparedStatement psmt = conn.prepareStatement("DELETE FROM `store`.`product` WHERE `product`.`Product_ID` = ?");
+            PreparedStatement psmt = conn.prepareStatement("DELETE FROM Products WHERE id = ?;");
             psmt.setInt(1, id);
             psmt.executeUpdate();
         }
